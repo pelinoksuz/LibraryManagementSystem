@@ -12,8 +12,7 @@
 </head>
 <body>
 <p>Home Page</p>
+<p>Only students can be signed up</p>
 <a href="/studentSignUp">SignUp Student</a>
-<a href="/LibrarianSignUp">SignUp Librarian</a>
-<a href="/PublisherSignUp">SignUp Publisher</a>
 </body>
 </html>
