@@ -16,7 +16,7 @@ import org.springframework.web.context.request.WebRequest;
 import java.util.List;
 
 @Controller
-@SessionAttributes({ "username", "level", "itemData" })
+@SessionAttributes({ "username", "level", "itemData","lib_username","pub_username" })
 public class AppController
 {
     @Autowired
@@ -26,39 +26,80 @@ public class AppController
     @Autowired
     JdbcTemplate conn;
 
-    @GetMapping("/")
-    public String index(ModelMap model)
+
+
+    @GetMapping("/studentLogin")
+    public String studentLogin(ModelMap model)
     {
-        return "index";
+        return "studentLogin";
+    }
+    @PostMapping("/studentLogin")
+    public String studentLogin(ModelMap model, @RequestParam String username, @RequestParam String password)
+    {
+        //password = Salter.salt(password, "CS202Project");
+
+        if (!service.studentvalidate(username, password))
+        {
+            model.put("errorMessage", "Invalid Credentials");
+
+            return "studentLogin";
+        }
+
+        model.put("username", username);
+
+        return "studentLogin";
+    }
+
+
+
+    @GetMapping("/librarianLogin")
+    public String librarianLogin(ModelMap model)
+    {
+        return "librarianLogin";
+    }
+    @PostMapping("/librarianLogin")
+    public String librarianLogin(ModelMap model,@RequestParam String lib_username, @RequestParam String lib_password)
+    {
+        //password = Salter.salt(password, "CS202Project");
+
+        if (!service.librarianvalidate(lib_username, lib_password))
+        {
+            model.put("errorMessage", "Invalid Credentials");
+
+            return "librarianLogin";
+        }
+
+        model.put("lib_username", lib_username);
+
+        return "librarianLogin";
+    }
+
+    @GetMapping("/PublisherLogin")
+    public String PublisherLogin(ModelMap model)
+    {
+        return "PublisherLogin";
+    }
+    @PostMapping("/PublisherLogin")
+    public String PublisherLogin(ModelMap model,@RequestParam String pub_username, @RequestParam String pub_password)
+    {
+        //password = Salter.salt(password, "CS202Project");
+
+        if (!service.publishervalidate(pub_username, pub_password))
+        {
+            model.put("errorMessage", "Invalid Credentials");
+
+            return "PublisherLogin";
+        }
+
+        model.put("pub_username", pub_username);
+
+        return "PublisherLogin";
     }
     @GetMapping("/signup")
     public String signup(ModelMap model)
     {
         return "signup";
     }
-    @GetMapping("/login")
-    public String loginPage(ModelMap model)
-    {
-        return "login";
-    }
-
-    @PostMapping("/login")
-    public String login(ModelMap model, @RequestParam String username, @RequestParam String password)
-    {
-        //password = Salter.salt(password, "CS202Project");
-
-        if (!service.validate(username, password))
-        {
-            model.put("errorMessage", "Invalid Credentials");
-
-            return "login";
-        }
-
-        model.put("username", username);
-
-        return "login";
-    }
-
     @PostMapping("/signup")
     public String signup(@RequestParam String name, @RequestParam String surname, @RequestParam String st_username, @RequestParam String st_password, @RequestParam String address, @RequestParam String email)
     {
@@ -70,6 +111,8 @@ public class AppController
 
         return "login";
     }
+
+
     @GetMapping("/logout")
     public String logout(ModelMap model, WebRequest request, SessionStatus session)
     {
@@ -90,5 +133,33 @@ public class AppController
         model.addAttribute("itemData", data.toArray(new String[0][2]));
 
         return "list";
+    }
+    @GetMapping("/")
+    public String index(ModelMap model)
+    {
+        return "index";
+    }
+    @GetMapping("/login")
+    public String loginPage(ModelMap model)
+    {
+        return "login";
+    }
+
+
+
+    @GetMapping("/studentSignUp")
+    public String studentSignUp(ModelMap model)
+    {
+        return "studentSignUp";
+    }
+    @GetMapping("/LibrarianSignUp")
+    public String LibrarianSignUp(ModelMap model)
+    {
+        return "LibrarianSignUp";
+    }
+    @GetMapping("/PublisherSignUp")
+    public String PublisherSignUp(ModelMap model)
+    {
+        return "PublisherSignUp";
     }
 }
