@@ -26,6 +26,7 @@
 }else{
 %>
 <p>You are logged in as: <%= pub_username %> </p>
+<a href="/informationOfBooks">Information Of Books</a>
 <a href="/logout">Logout</a>
 <%
     }

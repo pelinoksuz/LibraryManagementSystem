@@ -16,7 +16,7 @@ import org.springframework.web.context.request.WebRequest;
 import java.util.List;
 
 @Controller
-@SessionAttributes({ "username", "level", "itemData","lib_username","pub_username" })
+@SessionAttributes({ "username", "level", "bookData","lib_username","pub_username" })
 public class AppController
 {
     @Autowired
@@ -122,17 +122,17 @@ public class AppController
         return "redirect:/login";
     }
 
-    @GetMapping("/list")
-    public String list(ModelMap model)
+    @GetMapping("/informationOfBooks")
+    public String informationOfBooks(ModelMap model)
     {
-        List<String[]> data = conn.query("SELECT * FROM items",
+        List<String[]> data = conn.query("SELECT * FROM book",
                 (row, index) -> {
-                    return new String[]{ row.getString("item_name"), row.getString("item_value") };
+                    return new String[]{ row.getString("book_id"), row.getString("title"), row.getString("publication_date"), row.getString("penaltyinfo"), row.getString("author_name"), row.getString("genre") };
                 });
 
-        model.addAttribute("itemData", data.toArray(new String[0][2]));
+        model.addAttribute("bookData", data.toArray(new String[0][6]));
 
-        return "list";
+        return "informationOfBooks";
     }
     @GetMapping("/")
     public String index(ModelMap model)
