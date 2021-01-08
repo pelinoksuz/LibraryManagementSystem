@@ -18,7 +18,7 @@ import java.sql.Date;
 import java.util.List;
 
 @Controller
-@SessionAttributes({ "username", "level", "bookData","lib_username","pub_username","title","overdueData" })
+@SessionAttributes({ "username", "level", "bookData","lib_username","pub_username","title","overdueData","borrowedData" })
 public class AppController
 {
     @Autowired
@@ -149,6 +149,18 @@ public class AppController
         model.addAttribute("bookData", data.toArray(new String[0][6]));
 
         return "informationOfBooks";
+    }
+    @GetMapping("/listPublisher_BorrowedBooks")
+    public String listPublisher_BorrowedBooks(ModelMap model)
+    {
+        List<String[]> data = conn.query("select  name ,sum(times_borrowed)from book join publisher",
+                (row, index) -> {
+                    return new String[]{ row.getString("name"), row.getString("sum(times_borrowed)") };
+                });
+
+        model.addAttribute("borrowedData", data.toArray(new String[0][1]));
+
+        return "listPublisher_BorrowedBooks";
     }
     @GetMapping("/listOverdue")
     public String listOverdue(ModelMap model)
