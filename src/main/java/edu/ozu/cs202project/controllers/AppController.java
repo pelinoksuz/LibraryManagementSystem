@@ -1,6 +1,5 @@
 package edu.ozu.cs202project.controllers;
 
-import edu.ozu.cs202project.services.AddBookService;
 import edu.ozu.cs202project.services.LoginService;
 import edu.ozu.cs202project.services.SignUpService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +24,7 @@ public class AppController
     LoginService service;
     @Autowired
     SignUpService signUpService;
-    @Autowired
-    AddBookService addBookService;
+
     @Autowired
     JdbcTemplate conn;
 
@@ -105,15 +103,8 @@ public class AppController
         return "addBook";
     }
     @PostMapping("/addBook")
-    public String addBook(ModelMap model, @RequestParam String genre, @RequestParam String author_name, @RequestParam String title, @RequestParam String status, @RequestParam int times_borrowed, @RequestParam int penaltyinfo, @RequestParam String requested)
-    {
-        if (!addBookService.addBook(genre, author_name, title, status, times_borrowed, penaltyinfo, requested))
-        {
-            return "addBook";
-        }
-        model.put("title", title);
-        return "addBook";
-    }
+
+
     @GetMapping("/signup")
     public String signup(ModelMap model)
     {
