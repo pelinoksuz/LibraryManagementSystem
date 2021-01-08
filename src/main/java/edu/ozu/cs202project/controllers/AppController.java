@@ -18,7 +18,7 @@ import java.sql.Date;
 import java.util.List;
 
 @Controller
-@SessionAttributes({ "username", "level", "bookData","lib_username","pub_username","title","overdueData","borrowedData" })
+@SessionAttributes({ "username", "level", "bookData","lib_username","pub_username","title","overdueData","borrowedData","mostBorrowedData" })
 public class AppController
 {
     @Autowired
@@ -173,6 +173,18 @@ public class AppController
         model.addAttribute("overdueData", data.toArray(new String[0][6]));
 
         return "listOverdue";
+    }
+    @GetMapping("/genrewithmostborrowedbooks")
+    public String genrewithmostborrowedbooks(ModelMap model)
+    {
+        List<String[]> data = conn.query("select genre, times_borrowed from book where times_borrowed in (select max(times_borrowed) from book ) ",
+                (row, index) -> {
+                    return new String[]{row.getString("genre"),row.getString("times_borrowed") };
+                });
+
+        model.addAttribute("mostBorrowedData", data.toArray(new String[0][1]));
+
+        return "genrewithmostborrowedbooks";
     }
 
 
