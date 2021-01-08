@@ -30,7 +30,7 @@
 <a href="/informationOfBooks">Information Of Books</a>
 <a href="/addBook">Add Book</a>
 <a href="/listOverdue">List Overdue</a>
-<a href="/logout">Display borrowed books by users</a>
+<a href="/listPublisher_BorrowedBooks">List Number of Publishers' Borrowed Books</a>
 <a href="/logout">Logout</a>
 <%
     }
