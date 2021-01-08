@@ -1,5 +1,6 @@
 package edu.ozu.cs202project.controllers;
 
+import edu.ozu.cs202project.services.AddBookService;
 import edu.ozu.cs202project.services.LoginService;
 import edu.ozu.cs202project.services.SignUpService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,16 +14,19 @@ import org.springframework.web.bind.annotation.SessionAttributes;
 import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.context.request.WebRequest;
 
+import java.sql.Date;
 import java.util.List;
 
 @Controller
-@SessionAttributes({ "username", "level", "bookData","lib_username","pub_username" })
+@SessionAttributes({ "username", "level", "bookData","lib_username","pub_username","title","overdueData" })
 public class AppController
 {
     @Autowired
     LoginService service;
     @Autowired
     SignUpService signUpService;
+    @Autowired
+    AddBookService addBookService;
     @Autowired
     JdbcTemplate conn;
 
@@ -95,6 +99,21 @@ public class AppController
 
         return "PublisherLogin";
     }
+    @GetMapping("/addBook")
+    public String addBook(ModelMap model)
+    {
+        return "addBook";
+    }
+    @PostMapping("/addBook")
+    public String addBook(ModelMap model, @RequestParam String genre, @RequestParam String author_name, @RequestParam String title, @RequestParam String status, @RequestParam int times_borrowed, @RequestParam int penaltyinfo, @RequestParam String requested)
+    {
+        if (!addBookService.addBook(genre, author_name, title, status, times_borrowed, penaltyinfo, requested))
+        {
+            return "addBook";
+        }
+        model.put("title", title);
+        return "addBook";
+    }
     @GetMapping("/signup")
     public String signup(ModelMap model)
     {
@@ -103,15 +122,12 @@ public class AppController
     @PostMapping("/signup")
     public String signup(@RequestParam String name, @RequestParam String surname, @RequestParam String st_username, @RequestParam String st_password, @RequestParam String address, @RequestParam String email)
     {
-
         if (signUpService.signupStudent(name, surname, st_username, st_password, address, email))
         {
             return "studentPage";
         }
-
         return "login";
     }
-
 
     @GetMapping("/logout")
     public String logout(ModelMap model, WebRequest request, SessionStatus session)
@@ -134,6 +150,20 @@ public class AppController
 
         return "informationOfBooks";
     }
+    @GetMapping("/listOverdue")
+    public String listOverdue(ModelMap model)
+    {
+        List<String[]> data = conn.query("select * from Student join book where student.book_id=book.book_id and book.status= 'Overdue' ",
+                (row, index) -> {
+                    return new String[]{row.getString("student_id"),row.getString("name"),row.getString("surname"),row.getString("book_id"),row.getString("title"), row.getString("penaltyinfo"), row.getString("author_name") };
+                });
+
+        model.addAttribute("overdueData", data.toArray(new String[0][6]));
+
+        return "listOverdue";
+    }
+
+
     @GetMapping("/")
     public String index(ModelMap model)
     {
@@ -144,7 +174,6 @@ public class AppController
     {
         return "login";
     }
-
 
 
     @GetMapping("/studentSignUp")

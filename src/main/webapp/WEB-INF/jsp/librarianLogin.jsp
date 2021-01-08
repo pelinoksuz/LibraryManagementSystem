@@ -28,6 +28,8 @@
 <p>You are logged in as: <%= lib_username %> </p>
 <a href="/PublisherSignUp">Create Publisher Account</a>
 <a href="/informationOfBooks">Information Of Books</a>
+<a href="/addBook">Add Book</a>
+<a href="/listOverdue">List Overdue</a>
 <a href="/logout">Display borrowed books by users</a>
 <a href="/logout">Logout</a>
 <%
