@@ -18,7 +18,7 @@ import java.sql.Date;
 import java.util.List;
 
 @Controller
-@SessionAttributes({ "username", "level", "bookData","lib_username","pub_username","title","overdueData","borrowedData" })
+@SessionAttributes({ "username", "level", "bookData","lib_username","pub_username","title","overdueData" })
 public class AppController
 {
     @Autowired
@@ -26,7 +26,10 @@ public class AppController
     @Autowired
     SignUpService signUpService;
     @Autowired
+    AddBookService addBookService;
+    @Autowired
     JdbcTemplate conn;
+
 
 
     @GetMapping("/studentLogin")
@@ -96,7 +99,21 @@ public class AppController
 
         return "PublisherLogin";
     }
-
+    @GetMapping("/addBook")
+    public String addBook(ModelMap model)
+    {
+        return "addBook";
+    }
+    @PostMapping("/addBook")
+    public String addBook(ModelMap model, @RequestParam String genre, @RequestParam String author_name, @RequestParam String title, @RequestParam String status, @RequestParam int times_borrowed, @RequestParam int penaltyinfo, @RequestParam String requested)
+    {
+        if (!addBookService.addBook(genre, author_name, title, status, times_borrowed, penaltyinfo, requested))
+        {
+            return "addBook";
+        }
+        model.put("title", title);
+        return "addBook";
+    }
     @GetMapping("/signup")
     public String signup(ModelMap model)
     {
@@ -147,18 +164,6 @@ public class AppController
     }
 
 
-    @GetMapping("/listPublisher_BorrowedBooks")
-    public String listPublisher_BorrowedBooks(ModelMap model)
-    {
-        List<String[]> data = conn.query("select name , sum(times_borrowed) from publisher join book where book.pub_id = publisher.pub_id",
-                (row, index) -> {
-                    return new String[]{ row.getString("name"), row.getString("sum(times_borrowed)") };
-                });
-
-        model.addAttribute("borrowedData", data.toArray(new String[0][1]));
-
-        return "listPublisher_BorrowedBooks";
-    }
     @GetMapping("/")
     public String index(ModelMap model)
     {
