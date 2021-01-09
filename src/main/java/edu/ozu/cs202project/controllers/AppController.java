@@ -18,7 +18,7 @@ import java.sql.Date;
 import java.util.List;
 
 @Controller
-@SessionAttributes({ "username", "level", "bookData","lib_username","pub_username","title","overdueData","borrowedData","mostBorrowedData" })
+@SessionAttributes({ "username", "level", "bookData","lib_username","pub_username","title","overdueData","borrowedData","mostBorrowedData","sumofoverdued" })
 public class AppController
 {
     @Autowired
@@ -173,6 +173,18 @@ public class AppController
         model.addAttribute("overdueData", data.toArray(new String[0][6]));
 
         return "listOverdue";
+    }
+    @GetMapping("/numberofbooksoverduedatthemoment")
+    public String numberofbooksoverduedatthemoment(ModelMap model)
+    {
+        List<String[]> data = conn.query("select count(book.book_id) from Student join book where student.book_id=book.book_id and book.status= 'Overdue'  ",
+                (row, index) -> {
+                    return new String[]{row.getString("count(book.book_id)") };
+                });
+
+        model.addAttribute("sumofoverdued", data.toArray(new String[0][0]));
+
+        return "numberofbooksoverduedatthemoment";
     }
     @GetMapping("/genrewithmostborrowedbooks")
     public String genrewithmostborrowedbooks(ModelMap model)
