@@ -22,8 +22,8 @@
     author name : <input type = "text" name="author_name" />
     title : <input type = "text" name="title" />
     status : <input type = "text" name="status" />
+    Publication Date : <input type = "text" name="publication_date" />
     Borrowed time : <input type = "text" name="times_borrowed" />
-    penalty info : <input type = "text" name="penaltyinfo" />
     Requested/ Not Requested : <input type = "text" name="requested" />
     Publisher ID : <input type = "text" name="pub_id" />
     Librarian ID : <input type = "text" name="lib_id" />
@@ -32,7 +32,7 @@
 <%
 }else{
 %>
-<p>Book are added in as: <%= title %> </p>
+<p>Book was added as: <%= title %> </p>
 
 <%
     }

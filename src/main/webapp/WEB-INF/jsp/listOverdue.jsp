@@ -20,7 +20,7 @@
         {
 %>
 <p>BOOKS TO BE DELIVERED ARE LISTED: </p>
-<p> ST ID: <%= book[0] %> ST NAME : <%= book[1] %> ST SURNAME : <%= book[2] %> BOOK ID : <%= book[3] %> BOOK NAME : <%= book[4] %> PENALTY INFO : <%= book[5] %> AUTHOR : <%= book[6] %></p>
+<p> ST ID: <%= book[0] %> ST NAME : <%= book[1] %> ST SURNAME : <%= book[2] %> BOOK ID : <%= book[3] %> BOOK NAME : <%= book[4] %> AUTHOR : <%= book[5] %></p>
 <%
         }
     }

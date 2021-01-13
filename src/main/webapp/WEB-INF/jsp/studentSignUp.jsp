@@ -26,8 +26,6 @@
     Student surname : <input type = "text" name="surname"/>
     Student username : <input type = "text" name="st_username" />
     Student password : <input type = "text" name="st_password"/>
-    Student address : <input type = "text" name="address" />
-    Student email : <input type = "text" name="email"/>
     <input type="submit" value ="Signup"/>
 </form>
 <%

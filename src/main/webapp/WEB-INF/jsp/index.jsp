@@ -12,7 +12,7 @@
 </head>
 <body>
 <p>Home Page</p>
-<a href="/signup">signup</a>
+<a href="/studentSignUp">SignUp Student</a>
 <a href="/login">login</a>
 </body>
 </html>

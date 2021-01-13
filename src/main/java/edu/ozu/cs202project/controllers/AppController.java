@@ -1,8 +1,7 @@
 package edu.ozu.cs202project.controllers;
 
-import edu.ozu.cs202project.services.AddBookService;
 import edu.ozu.cs202project.services.LoginService;
-import edu.ozu.cs202project.services.SignUpService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Controller;
@@ -17,19 +16,15 @@ import org.springframework.web.context.request.WebRequest;
 import java.sql.Date;
 import java.util.List;
 
+
 @Controller
-@SessionAttributes({ "username", "level", "bookData","lib_username","pub_username","title","overdueData","borrowedData","mostBorrowedData","sumofoverdued" })
+@SessionAttributes({"username", "level", "bookData","lib_username","pub_username","title","overdueData","borrowedData","mostBorrowedData","sumofoverdued","name" })
 public class AppController
 {
     @Autowired
     LoginService service;
     @Autowired
-    SignUpService signUpService;
-    @Autowired
-    AddBookService addBookService;
-    @Autowired
     JdbcTemplate conn;
-
 
 
     @GetMapping("/studentLogin")
@@ -53,8 +48,6 @@ public class AppController
 
         return "studentLogin";
     }
-
-
 
     @GetMapping("/librarianLogin")
     public String librarianLogin(ModelMap model)
@@ -99,34 +92,47 @@ public class AppController
 
         return "PublisherLogin";
     }
+
     @GetMapping("/addBook")
     public String addBook(ModelMap model)
     {
         return "addBook";
     }
     @PostMapping("/addBook")
-    public String addBook(ModelMap model, @RequestParam String genre, @RequestParam String author_name, @RequestParam String title, @RequestParam String status, @RequestParam int times_borrowed, @RequestParam int penaltyinfo, @RequestParam String requested)
-    {
-        if (!addBookService.addBook(genre, author_name, title, status, times_borrowed, penaltyinfo, requested))
-        {
-            return "addBook";
-        }
-        model.put("title", title);
+    public String addBook(ModelMap model,@RequestParam String genre, @RequestParam String author_name, @RequestParam String title, @RequestParam String status, @RequestParam Date publication_date, @RequestParam int times_borrowed, @RequestParam int pub_id, @RequestParam int lib_id, @RequestParam String requested) {
+        model.put("title",title);
+        conn.update(
+                "INSERT INTO book(genre,author_name,title, status, publication_date,times_borrowed,requested,pub_id,lib_id) values(?,?,?,?,?,?,?,?,?)", genre,author_name,title, status, publication_date,times_borrowed,requested,pub_id,lib_id);
         return "addBook";
+
     }
-    @GetMapping("/signup")
-    public String signup(ModelMap model)
+    @GetMapping("/studentSignUp")
+    public String studentSignUp(ModelMap model)
     {
-        return "signup";
+        return "studentSignUp";
     }
-    @PostMapping("/signup")
-    public String signup(@RequestParam String name, @RequestParam String surname, @RequestParam String st_username, @RequestParam String st_password, @RequestParam String address, @RequestParam String email)
+    @PostMapping("/studentSignUp")
+    public String studentSignUp(ModelMap model, @RequestParam String name, @RequestParam String surname,
+                                @RequestParam String st_username, @RequestParam String st_password)
     {
-        if (signUpService.signupStudent(name, surname, st_username, st_password, address, email))
-        {
-            return "studentPage";
-        }
-        return "login";
+        model.put("name",name);
+        conn.update(
+                "INSERT INTO student(name,surname,st_username, st_password) values(?,?,?,?)", name, surname, st_username, st_password);
+        return "studentSignUp";
+    }
+    @GetMapping("/PublisherSignUp")
+    public String PublisherSignUp(ModelMap model)
+    {
+        return "PublisherSignUp";
+    }
+    @PostMapping("/PublisherSignUp")
+    public String PublisherSignUp(ModelMap model, @RequestParam String name,
+                                @RequestParam String pub_username, @RequestParam String pub_password)
+    {
+        model.put("name",name);
+        conn.update(
+                "INSERT INTO Publisher(name,pub_username, pub_password) values(?,?,?)", name, pub_username, pub_password);
+        return "PublisherSignUp";
     }
 
     @GetMapping("/logout")
@@ -143,10 +149,10 @@ public class AppController
     {
         List<String[]> data = conn.query("SELECT * FROM book",
                 (row, index) -> {
-                    return new String[]{ row.getString("book_id"), row.getString("title"), row.getString("publication_date"), row.getString("penaltyinfo"), row.getString("author_name"), row.getString("genre") };
+                    return new String[]{ row.getString("book_id"), row.getString("title"), row.getString("publication_date"), row.getString("author_name"), row.getString("genre") };
                 });
 
-        model.addAttribute("bookData", data.toArray(new String[0][6]));
+        model.addAttribute("bookData", data.toArray(new String[0][5]));
 
         return "informationOfBooks";
     }
@@ -167,10 +173,10 @@ public class AppController
     {
         List<String[]> data = conn.query("select * from Student join book where student.book_id=book.book_id and book.status= 'Overdue' ",
                 (row, index) -> {
-                    return new String[]{row.getString("student_id"),row.getString("name"),row.getString("surname"),row.getString("book_id"),row.getString("title"), row.getString("penaltyinfo"), row.getString("author_name") };
+                    return new String[]{row.getString("student_id"),row.getString("name"),row.getString("surname"),row.getString("book_id"),row.getString("title"), row.getString("author_name") };
                 });
 
-        model.addAttribute("overdueData", data.toArray(new String[0][6]));
+        model.addAttribute("overdueData", data.toArray(new String[0][5]));
 
         return "listOverdue";
     }
@@ -212,19 +218,4 @@ public class AppController
     }
 
 
-    @GetMapping("/studentSignUp")
-    public String studentSignUp(ModelMap model)
-    {
-        return "studentSignUp";
-    }
-    @GetMapping("/LibrarianSignUp")
-    public String LibrarianSignUp(ModelMap model)
-    {
-        return "LibrarianSignUp";
-    }
-    @GetMapping("/PublisherSignUp")
-    public String PublisherSignUp(ModelMap model)
-    {
-        return "PublisherSignUp";
-    }
 }
