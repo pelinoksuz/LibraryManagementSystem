@@ -29,6 +29,7 @@
 <a href="/PublisherSignUp">Create Publisher Account</a>
 <a href="/informationOfBooks">Information Of Books</a>
 <a href="/addBook">Add Book</a>
+<a href="/deleteBook">Delete Book</a>
 <a href="/listOverdue">List Overdue</a>
 <a href="/listPublisher_BorrowedBooks">List Number of Publishers' Borrowed Books</a>
 <a href="/genrewithmostborrowedbooks">genre with most borrowed booksd Books</a>

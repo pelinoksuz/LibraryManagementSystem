@@ -106,6 +106,19 @@ public class AppController
         return "addBook";
 
     }
+    @GetMapping("/deleteBook")
+    public String deleteBook(ModelMap model)
+    {
+        return "deleteBook";
+    }
+    @PostMapping("/deleteBook")
+    public String deleteBook(@RequestParam int book_id) {
+
+        conn.update(
+                "DELETE FROM book WHERE book.book_id =?",book_id);
+        return "deleteBook";
+
+    }
     @GetMapping("/studentSignUp")
     public String studentSignUp(ModelMap model)
     {
