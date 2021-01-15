@@ -222,7 +222,7 @@ public class AppController
     @GetMapping("/informationOfBooks")
     public String informationOfBooks(ModelMap model)
     {
-        List<String[]> data = conn.query("SELECT * FROM book",
+        List<String[]> data = conn.query("select * from book where book.status= 'PRESENT'",
                 (row, index) -> {
                     return new String[]{ row.getString("book_id"), row.getString("title"), row.getString("publication_date"), row.getString("author_name"), row.getString("genre") };
                 });
