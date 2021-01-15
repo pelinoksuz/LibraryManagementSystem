@@ -1,5 +1,6 @@
 package edu.ozu.cs202project.controllers;
 
+import edu.ozu.cs202project.services.BorrowService;
 import edu.ozu.cs202project.services.LoginService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,17 +15,24 @@ import org.springframework.web.bind.support.SessionStatus;
 import org.springframework.web.context.request.WebRequest;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 
 @Controller
-@SessionAttributes({"username", "level", "bookData","lib_username","pub_username","title","overdueData","borrowedData","mostBorrowedData","sumofoverdued","name" })
+@SessionAttributes({"username", "level", "bookData","lib_username","pub_username",
+        "title","overdueData","borrowedData","mostBorrowedData","sumofoverdued","name",
+        "userBorrowedData","date_start","date_returned"})
 public class AppController
 {
     @Autowired
     LoginService service;
+   @Autowired
+   BorrowService serviceBorrow;
     @Autowired
     JdbcTemplate conn;
+
 
 
     @GetMapping("/studentLogin")
@@ -157,6 +165,60 @@ public class AppController
         return "redirect:/login";
     }
 
+    @GetMapping("/borrowBook")
+    public String borrowBook(ModelMap model)
+    {
+        return "borrowBook";
+    }
+    @PostMapping("/borrowBook")
+    public String borrowBook(@RequestParam int student_id, @RequestParam int book_id)
+    {
+        LocalDate localDate = LocalDate.now();
+        LocalDate date_start = localDate;
+        LocalDate date_returned = localDate.plusDays(30);
+        Boolean isBefore = localDate.isBefore(date_returned);
+        List<Map<String, Object>> response = conn.queryForList(
+                "SELECT book_id FROM book WHERE status ='PRESENT'",
+                new Object[]{book_id}
+        );
+            conn.update(
+                    "INSERT INTO borrowed_by(student_id,book_id,date_start,date_returned) values(?,?,?,?)", student_id, book_id, date_start, date_returned);
+
+
+        return "borrowBook";
+    }
+
+    @GetMapping("/usersBorrowedCurrently")
+    public String usersBorrowedCurrently(ModelMap model)
+    {
+        return "usersBorrowedCurrently";
+    }
+    @PostMapping("/usersBorrowedCurrently")
+    public String usersBorrowedCurrently(ModelMap model,@RequestParam Date date_returned, @RequestParam Date date_start)
+    {
+        model.put("date_start", date_start);
+        if (!serviceBorrow.isBorrowed(date_returned, date_start))
+        {
+            model.put("errorMessage", "There are no books borrowed between these dates.");
+
+            return "usersBorrowedCurrently";
+        }
+
+        return "usersBorrowedCurrently";
+    }
+
+    @GetMapping("/listUsersBorrowedCurrently")
+    public String listUsersBorrowedCurrently(ModelMap model)
+    {
+
+        List<String[]> data = conn.query("select name, surname, title, author_name, date_start, date_returned from book join borrowed_by join student where student.student_id = borrowed_by.student_id and book.book_id = borrowed_by.book_id ",
+                (row, index) -> {
+                    return new String[]{ row.getString("name"), row.getString("surname"),row.getString("title"), row.getString("author_name"),row.getString("date_start"), row.getString("date_returned") };
+                });
+
+        model.addAttribute("userBorrowedData", data.toArray(new String[0][5]));
+        return "/listUsersBorrowedCurrently";
+    }
     @GetMapping("/informationOfBooks")
     public String informationOfBooks(ModelMap model)
     {
@@ -181,6 +243,7 @@ public class AppController
 
         return "listPublisher_BorrowedBooks";
     }
+
     @GetMapping("/listOverdue")
     public String listOverdue(ModelMap model)
     {
