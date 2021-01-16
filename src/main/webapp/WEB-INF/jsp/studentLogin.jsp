@@ -28,7 +28,8 @@
 <p>You are logged in as: <%= username %> </p>
 <a href="/informationOfBooks">Information Of Books</a>
 <a href="/borrowBook">Borrow Book</a>
-<a href="/logout">Borrow History</a>
+<a href="/returnBook">Return Book</a>
+<a href="/borrowHistory">Borrow History</a>
 <a href="/logout">Logout</a>
 <%
     }

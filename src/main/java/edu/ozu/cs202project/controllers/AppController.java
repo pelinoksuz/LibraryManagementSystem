@@ -23,7 +23,7 @@ import java.util.Map;
 @Controller
 @SessionAttributes({"username", "level", "bookData","lib_username","pub_username",
         "title","overdueData","borrowedData","mostBorrowedData","sumofoverdued","name",
-        "userBorrowedData","date_start","date_returned"})
+        "userBorrowedData","date_start","date_returned","student_id","borrowHistData","student_id"})
 public class AppController
 {
     @Autowired
@@ -171,23 +171,51 @@ public class AppController
         return "borrowBook";
     }
     @PostMapping("/borrowBook")
-    public String borrowBook(@RequestParam int student_id, @RequestParam int book_id)
+    public String borrowBook(ModelMap model, @RequestParam int student_id, @RequestParam int book_id)
     {
         LocalDate localDate = LocalDate.now();
         LocalDate date_start = localDate;
         LocalDate date_returned = localDate.plusDays(30);
-        Boolean isBefore = localDate.isBefore(date_returned);
-        List<Map<String, Object>> response = conn.queryForList(
-                "SELECT book_id FROM book WHERE status ='PRESENT'",
-                new Object[]{book_id}
-        );
-            conn.update(
-                    "INSERT INTO borrowed_by(student_id,book_id,date_start,date_returned) values(?,?,?,?)", student_id, book_id, date_start, date_returned);
-
+        model.put("student_id",student_id);
+        conn.update(
+                "UPDATE book SET status='BORROWED' where book_id ='"+book_id+"'");
+        conn.update(
+                "INSERT INTO borrowed_by(date_returned, date_start, student_id, book_id ) values(?,?,?,?)", date_start,date_returned, student_id, book_id);
 
         return "borrowBook";
     }
+    @GetMapping("/returnBook")
+    public String returnBook(ModelMap model)
+    {
+        return "returnBook";
+    }
+    @PostMapping("/returnBook")
+    public String returnBook(ModelMap model, @RequestParam int book_id)
+    {
+        model.put("book_id",book_id);
+        conn.update(
+                "UPDATE book SET status='PRESENT' where book_id ='"+book_id+"'");
 
+        return "returnBook";
+    }
+
+    @GetMapping("/borrowHistory")
+    public String borrowHistory(ModelMap model)
+    {
+        return "borrowHistory";
+    }
+    @PostMapping("/borrowHistory")
+    public String borrowHistory(ModelMap model,@RequestParam String student_id)
+    {
+        model.put("username",student_id);
+        List<String[]> data = conn.query("select name, surname, title, author_name, date_start, date_returned from book join borrowed_by join student where student.student_id = borrowed_by.student_id and book.book_id = borrowed_by.book_id and student.student_id='"+student_id+"'",
+                (row, index) -> {
+                    return new String[]{ row.getString("name"), row.getString("surname"),row.getString("title"), row.getString("author_name"),row.getString("date_start"), row.getString("date_returned") };
+                });
+
+        model.addAttribute("borrowHistData", data.toArray(new String[0][5]));
+        return "/listborrowHistory";
+    }
     @GetMapping("/usersBorrowedCurrently")
     public String usersBorrowedCurrently(ModelMap model)
     {
@@ -205,6 +233,40 @@ public class AppController
         }
 
         return "usersBorrowedCurrently";
+    }
+
+    @GetMapping("/assignBook")
+    public String assignBook(ModelMap model)
+    {
+        return "assignBook";
+    }
+    @PostMapping("/assignBook")
+    public String assignBook(ModelMap model,@RequestParam int student_id, @RequestParam int book_id)
+    {
+        model.put("book_id",book_id);
+        LocalDate localDate = LocalDate.now();
+        LocalDate date_start = localDate;
+        LocalDate date_returned = localDate.plusDays(30);
+        conn.update(
+                "UPDATE book SET status='BORROWED' where book_id ='"+book_id+"'");
+        conn.update(
+                "INSERT INTO borrowed_by(date_returned, date_start, student_id, book_id ) values(?,?,?,?)", date_start,date_returned, student_id, book_id);
+
+        return "assignBook";
+    }
+    @GetMapping("/unassignBook")
+    public String unassignBook(ModelMap model)
+    {
+        return "assignBook";
+    }
+    @PostMapping("/unassignBook")
+    public String unassignBook(ModelMap model,@RequestParam int student_id, @RequestParam int book_id)
+    {
+
+        conn.update(
+                "UPDATE book SET status='PRESENT' where book_id ='"+book_id+"'");
+
+        return "unassignBook";
     }
 
     @GetMapping("/listUsersBorrowedCurrently")
@@ -230,6 +292,24 @@ public class AppController
         model.addAttribute("bookData", data.toArray(new String[0][5]));
 
         return "informationOfBooks";
+    }
+    @GetMapping("/searchBook")
+    public String searchBook(ModelMap model)
+    {
+        return "searchBook";
+    }
+    @PostMapping("/searchBook")
+    public String searchBook(ModelMap model,@RequestParam Date date_returned, @RequestParam Date date_start)
+    {
+        model.put("date_start", date_start);
+        if (!serviceBorrow.isBorrowed(date_returned, date_start))
+        {
+            model.put("errorMessage", "There are no books borrowed between these dates.");
+
+            return "searchBook";
+        }
+
+        return "searchBook";
     }
     @GetMapping("/listPublisher_BorrowedBooks")
     public String listPublisher_BorrowedBooks(ModelMap model)

@@ -11,6 +11,8 @@
     <title>Information of Books</title>
 </head>
 <body>
+<a href="/searchBook">Search Book</a>
+
 <%
     String[][] data = (String[][]) session.getAttribute("bookData");
 
@@ -19,7 +21,7 @@
         for (String[] book : data)
         {
 %>
-<p> <%= book[0] %> : <%= book[1] %>: <%= book[2] %>: <%= book[3] %>: <%= book[4] %>   </p>
+<p> BOOK ID:<%= book[0] %> : AUTHOR NAME: <%= book[1] %>: PUBLISHED DATE: <%= book[2] %>: TITLE: <%= book[3] %>: GENRE: <%= book[4] %>   </p>
 <%
         }
     }
