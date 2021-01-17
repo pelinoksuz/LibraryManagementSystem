@@ -21,12 +21,10 @@
     genre : <input type = "text" name="genre" />
     author name : <input type = "text" name="author_name" />
     title : <input type = "text" name="title" />
-    status : <input type = "text" name="status" />
-    Publication Date : <input type = "text" name="publication_date" />
-    Borrowed time : <input type = "text" name="times_borrowed" />
-    Requested/ Not Requested : <input type = "text" name="requested" />
-    Publisher ID : <input type = "text" name="pub_id" />
-    Librarian ID : <input type = "text" name="lib_id" />
+    status (PRESENT/Borrowed) : <input type = "text" name="status" />
+    Publication Date (dd/MM/yyyy) : <input type = "text" name="publication_date" />
+    No. of times borrowed : <input type = "text" name="times_borrowed" />
+    Requested / Not Requested : <input type = "text" name="requested" />
     <input type="submit" value ="ADD"/>
 </form>
 <%

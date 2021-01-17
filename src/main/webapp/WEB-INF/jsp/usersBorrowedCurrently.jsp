@@ -18,8 +18,8 @@
 %>
 <p style="color: red">${errorMessage}</p>
 <form method = "post" >
-    STARTING DATE : <input type = "text" name="date_start" />
-    ENDING DATE : <input type = "text" name="date_returned"/>
+    STARTING DATE (dd/MM/yyyy) : <input type = "text" name="date_start" />
+    ENDING DATE (dd/MM/yyyy) : <input type = "text" name="date_returned"/>
     <input type="submit" value ="SEARCH"/>
 </form>
 <%

@@ -75,7 +75,7 @@ public class SignUpService {
     // this function is just to ensure that one librarian exists in lms.
     // user can not create a new librarian
     // this function will be used by app initially if librarian does not exist
-    public boolean signupLibrarian(String name, String surname, String lib_username, String lib_password, String address, String email)
+    public boolean signupLibrarian(String name, String surname, String lib_username, String lib_password)
     {
         int response = 0;
         String encodedPassword = passwordEncoder.encode(lib_password);
@@ -89,8 +89,8 @@ public class SignUpService {
             }
 
             response = conn.update(
-                    "INSERT INTO librarian (name, surname, lib_username, lib_password, address, email) values (?, ?, ?, ?, ?, ?)",
-                    name, surname, lib_username, encodedPassword, address, email
+                    "INSERT INTO librarian (name, surname, lib_username, lib_password) values (?, ?, ?, ?)",
+                    name, surname, lib_username, encodedPassword
             );
         }  catch (Exception e) {
             throw new LMSException("400", "Librarian creation failed. Make sure that username is not already registered.");

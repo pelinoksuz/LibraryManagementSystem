@@ -31,6 +31,7 @@
 <a href="/usersBorrowedCurrently">Users Borrowed Currently</a>
 <a href="/addBook">Add Book</a>
 <a href="/assignBook">Assign Book</a>
+<a href="/unassignBook">Unassign Book</a>
 <a href="/deleteBook">Delete Book</a>
 <a href="/listOverdue">List Overdue</a>
 <a href="/listPublisher_BorrowedBooks">List Number of Publishers' Borrowed Books</a>
