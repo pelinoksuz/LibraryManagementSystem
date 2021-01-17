@@ -1,10 +1,14 @@
 package edu.ozu.cs202project.controllers;
 
 import edu.ozu.cs202project.services.BorrowService;
-import edu.ozu.cs202project.services.LoginService;
 
+import edu.ozu.cs202project.services.SignUpService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,87 +30,30 @@ import java.util.Map;
         "userBorrowedData","date_start","date_returned","student_id","borrowHistData","student_id"})
 public class AppController
 {
+
     @Autowired
-    LoginService service;
+    SignUpService signUpService;
    @Autowired
    BorrowService serviceBorrow;
     @Autowired
     JdbcTemplate conn;
 
-
-
-    @GetMapping("/studentLogin")
-    public String studentLogin(ModelMap model)
-    {
-        return "studentLogin";
-    }
-    @PostMapping("/studentLogin")
-    public String studentLogin(ModelMap model, @RequestParam String username, @RequestParam String password)
-    {
-        //password = Salter.salt(password, "CS202Project");
-
-        if (!service.studentvalidate(username, password))
-        {
-            model.put("errorMessage", "Invalid Credentials");
-
-            return "studentLogin";
-        }
-
-        model.put("username", username);
-
-        return "studentLogin";
-    }
-
-    @GetMapping("/librarianLogin")
-    public String librarianLogin(ModelMap model)
-    {
-        return "librarianLogin";
-    }
-    @PostMapping("/librarianLogin")
-    public String librarianLogin(ModelMap model,@RequestParam String lib_username, @RequestParam String lib_password)
-    {
-        //password = Salter.salt(password, "CS202Project");
-
-        if (!service.librarianvalidate(lib_username, lib_password))
-        {
-            model.put("errorMessage", "Invalid Credentials");
-
-            return "librarianLogin";
-        }
-
-        model.put("lib_username", lib_username);
-
-        return "librarianLogin";
-    }
-
-    @GetMapping("/PublisherLogin")
-    public String PublisherLogin(ModelMap model)
-    {
-        return "PublisherLogin";
-    }
-    @PostMapping("/PublisherLogin")
-    public String PublisherLogin(ModelMap model,@RequestParam String pub_username, @RequestParam String pub_password)
-    {
-        //password = Salter.salt(password, "CS202Project");
-
-        if (!service.publishervalidate(pub_username, pub_password))
-        {
-            model.put("errorMessage", "Invalid Credentials");
-
-            return "PublisherLogin";
-        }
-
-        model.put("pub_username", pub_username);
-
-        return "PublisherLogin";
+    // verifies on app startup that librarian exists
+    // if does not exists creates it with username and password "admin"
+    @EventListener(ApplicationReadyEvent.class)
+    public void ensureLibrarianExists() {
+        signUpService.signupLibrarian("admin", "admin", "admin",
+                "admin", "admin house", "admin@library.com");
     }
 
     @GetMapping("/addBook")
+    @PreAuthorize("hasAnyAuthority('LIBRARIAN')")
     public String addBook(ModelMap model)
     {
         return "addBook";
     }
     @PostMapping("/addBook")
+    @PreAuthorize("hasAnyAuthority('LIBRARIAN')")
     public String addBook(ModelMap model,@RequestParam String genre, @RequestParam String author_name, @RequestParam String title, @RequestParam String status, @RequestParam Date publication_date, @RequestParam int times_borrowed, @RequestParam int pub_id, @RequestParam int lib_id, @RequestParam String requested) {
         model.put("title",title);
         conn.update(
@@ -115,11 +62,13 @@ public class AppController
 
     }
     @GetMapping("/deleteBook")
+    @PreAuthorize("hasAnyAuthority('LIBRARIAN')")
     public String deleteBook(ModelMap model)
     {
         return "deleteBook";
     }
     @PostMapping("/deleteBook")
+    @PreAuthorize("hasAnyAuthority('LIBRARIAN')")
     public String deleteBook(@RequestParam int book_id) {
 
         conn.update(
@@ -127,6 +76,7 @@ public class AppController
         return "deleteBook";
 
     }
+
     @GetMapping("/studentSignUp")
     public String studentSignUp(ModelMap model)
     {
@@ -136,24 +86,25 @@ public class AppController
     public String studentSignUp(ModelMap model, @RequestParam String name, @RequestParam String surname,
                                 @RequestParam String st_username, @RequestParam String st_password)
     {
-        model.put("name",name);
-        conn.update(
-                "INSERT INTO student(name,surname,st_username, st_password) values(?,?,?,?)", name, surname, st_username, st_password);
-        return "studentSignUp";
+        return signUpService.signupStudent(
+                name, surname, st_username, st_password
+        ) ? "redirect:/studentLogin" : "studentSignup";
     }
+
     @GetMapping("/PublisherSignUp")
+    @PreAuthorize("hasAnyAuthority('LIBRARIAN')")
     public String PublisherSignUp(ModelMap model)
     {
         return "PublisherSignUp";
     }
     @PostMapping("/PublisherSignUp")
+    @PreAuthorize("hasAnyAuthority('LIBRARIAN')")
     public String PublisherSignUp(ModelMap model, @RequestParam String name,
                                 @RequestParam String pub_username, @RequestParam String pub_password)
     {
-        model.put("name",name);
-        conn.update(
-                "INSERT INTO Publisher(name,pub_username, pub_password) values(?,?,?)", name, pub_username, pub_password);
-        return "PublisherSignUp";
+        return signUpService.signupPublisher(
+                name, pub_username, pub_password)
+                ? "redirect:/librarianLogin" : "PublisherSignUp";
     }
 
     @GetMapping("/logout")
@@ -361,17 +312,63 @@ public class AppController
         return "genrewithmostborrowedbooks";
     }
 
-
     @GetMapping("/")
-    public String index(ModelMap model)
+    public String index(Authentication authentication, ModelMap model)
     {
+        if (authentication != null) {
+            org.springframework.security.core.userdetails.User loggedInUser =
+                    (org.springframework.security.core.userdetails.User)
+                            authentication.getPrincipal();
+            String roles = loggedInUser.getAuthorities().toString();
+
+            if (roles.contains("STUDENT")) {
+                return "redirect:/studentLogin";
+            }
+            if (roles.contains("PUBLISHER")) {
+                return "redirect:/PublisherLogin";
+            }
+            if (roles.contains("LIBRARIAN")) {
+                return "redirect:/librarianLogin";
+            }
+        }
         return "index";
     }
-    @GetMapping("/login")
-    public String loginPage(ModelMap model)
+
+    @GetMapping("/studentLogin")
+    @PreAuthorize("hasAnyAuthority('STUDENT')")
+    public String studentLogin(Authentication authentication, ModelMap model)
     {
-        return "login";
+        if (authentication != null) {
+            org.springframework.security.core.userdetails.User loggedInUser =
+                    (org.springframework.security.core.userdetails.User)
+                            authentication.getPrincipal();
+            model.addAttribute("username", loggedInUser.getUsername());
+        }
+        return "studentLogin";
     }
 
+    @GetMapping("/PublisherLogin")
+    @PreAuthorize("hasAnyAuthority('PUBLISHER')")
+    public String PublisherLogin(Authentication authentication, ModelMap model)
+    {
+        if (authentication != null) {
+            org.springframework.security.core.userdetails.User loggedInUser =
+                    (org.springframework.security.core.userdetails.User)
+                            authentication.getPrincipal();
+            model.addAttribute("pub_username", loggedInUser.getUsername());
+        }        return "PublisherLogin";
+    }
+
+    @GetMapping("/librarianLogin")
+    @PreAuthorize("hasAnyAuthority('LIBRARIAN')")
+    public String librarianLogin(Authentication authentication, ModelMap model)
+    {
+        if (authentication != null) {
+            org.springframework.security.core.userdetails.User loggedInUser =
+                    (org.springframework.security.core.userdetails.User)
+                            authentication.getPrincipal();
+            model.addAttribute("lib_username", loggedInUser.getUsername());
+        }        return "librarianLogin";
+    }
 
 }
